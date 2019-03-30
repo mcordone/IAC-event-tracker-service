@@ -1,7 +1,9 @@
 package com.iac.service.service;
 
+import com.iac.service.domain.EventCollectionResponse;
 import com.iac.service.domain.EventDto;
 import com.iac.service.entity.Event;
+import com.iac.service.exception.NotFoundException;
 import com.iac.service.exception.ServiceException;
 import com.iac.service.repository.EventRepository;
 import org.junit.Before;
@@ -12,6 +14,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DataRetrievalFailureException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,5 +87,60 @@ public class EventServiceTest {
         expectedException.expectMessage("Error creating event");
 
         objectUnderTest.create(eventDto);
+    }
+
+    @Test
+    public void whenValidEventIsReturn_thenEventLookupSuccessfulTest() {
+        when(eventRepository.findEventById(any(Long.class))).thenReturn(event);
+
+        Event event = objectUnderTest.findById(EVENT_ID);
+        assertEquals(EVENT_ID, event.getId());
+        assertEquals(NAME, event.getName());
+        assertEquals(TYPE, event.getType());
+        assertEquals(VERSION, event.getVersion());
+
+        verify(eventRepository).findEventById(any(Long.class));
+    }
+
+    @Test
+    public void whenEventLookupReturnNull_thenEventLookupThrowExceptionTest() {
+        when(eventRepository.findEventById(any(Long.class))).thenReturn(null);
+
+        expectedException.expect(NotFoundException.class);
+        expectedException.expectMessage("Event with ID {1} not found");
+
+        objectUnderTest.findById(EVENT_ID);
+    }
+
+    @Test
+    public void whenLookupSuccessful_thenFindEventsReturnListTest() {
+        List<Event> events = new ArrayList<>(Arrays.asList(event, event));
+
+        when(eventRepository.findAll()).thenReturn(events);
+
+        EventCollectionResponse result = objectUnderTest.findAll();
+        assertNotNull(result);
+        assertTrue(result.getData().size() == 2);
+        assertEquals(EVENT_ID, result.getData().get(0).getId());
+        assertEquals(NAME, result.getData().get(0).getName());
+        assertEquals(TYPE, result.getData().get(0).getType());
+        assertEquals(VERSION, result.getData().get(0).getVersion());
+
+        assertEquals(EVENT_ID, result.getData().get(1).getId());
+        assertEquals(NAME, result.getData().get(1).getName());
+        assertEquals(TYPE, result.getData().get(1).getType());
+        assertEquals(VERSION, result.getData().get(1).getVersion());
+
+        verify(eventRepository).findAll();
+    }
+
+    @Test
+    public void whenEventLookupReturn_thenEventLookupThrowExceptionTest() {
+        when(eventRepository.findAll()).thenThrow(DataRetrievalFailureException.class);
+
+        expectedException.expect(ServiceException.class);
+        expectedException.expectMessage("Error occurred while retrieving events");
+
+        objectUnderTest.findAll();
     }
 }

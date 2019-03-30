@@ -1,5 +1,6 @@
 package com.iac.service.controller;
 
+import com.iac.service.domain.EventCollectionResponse;
 import com.iac.service.domain.EventDto;
 import com.iac.service.entity.Event;
 import org.junit.Before;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -26,6 +28,7 @@ public class EventControllerTest {
     private static final String DEVICE_TYPE = "Galaxy 10";
     private static final String DEVICE_FAMILY = "Samsung Galaxy";
     private static final String OS = "Android";
+    private static final int EVENT_LENGTH = 2;
 
     @LocalServerPort
     private int port;
@@ -59,5 +62,51 @@ public class EventControllerTest {
         assertEquals(TYPE, response.getBody().getType());
         assertEquals(VERSION, response.getBody().getVersion());
         assertEquals(DEVICE_TYPE, response.getBody().getDeviceType());
+    }
+
+    @Test
+    public void findEventById() {
+        //create event
+        ResponseEntity<Event> response = restTemplate.postForEntity(baseUrl.toString(), eventDto, Event.class);
+        assertNotNull(response);
+
+        //retrieve event id
+        Long eventId = response.getBody().getId();
+
+        //retrieve event object
+        String url = baseUrl.toString() + "/" + eventId;
+        response = restTemplate.getForEntity(url, Event.class);
+        assertEquals(eventId, response.getBody().getId());
+    }
+
+    @Test
+    public void findEventByIdReturns404StatusCodeWhenEventDontExist() {
+
+        int nonExistingEventId = -1;
+
+        //retrieve event object
+        String url = baseUrl.toString() + "/" + nonExistingEventId;
+        ResponseEntity<Event> response = restTemplate.getForEntity(url, Event.class);
+        assertTrue(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void findAllEvents() {
+        //create first event
+        ResponseEntity<Event> response = restTemplate.postForEntity(baseUrl.toString(), eventDto, Event.class);
+        assertNotNull(response);
+        Long firstEventId = response.getBody().getId();
+
+        //create second event
+        response = restTemplate.postForEntity(baseUrl.toString(), eventDto, Event.class);
+        assertNotNull(response);
+        Long secondEventId = response.getBody().getId();
+
+        //retrieve all
+        EventCollectionResponse result = restTemplate.getForObject(baseUrl.toString(), EventCollectionResponse.class);
+        assertNotNull(result);
+        assertEquals(EVENT_LENGTH, result.getData().size());
+        assertEquals(firstEventId, result.getData().get(0).getId());
+        assertEquals(secondEventId, result.getData().get(1).getId());
     }
 }
