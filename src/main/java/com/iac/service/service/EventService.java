@@ -31,6 +31,7 @@ public class EventService {
      * create an Event object with data from the Http request object payload
      * @param eventDto
      * @return Event
+     * @throws ServiceException
      */
     public Event create(EventDto eventDto) {
 
@@ -52,9 +53,11 @@ public class EventService {
     }
 
     /**
-     *
+     * retrieve Event object from H2 DB with corresponding id
      * @param id
      * @return Event
+     * @throws NotFoundException
+     * @throws ServiceException
      */
     public Event findById(Long id) {
 
@@ -76,8 +79,9 @@ public class EventService {
     }
 
     /**
-     *
+     * Retrieve all Event objects from DB
      * @return List<Event>
+     * @throws ServiceException
      */
     public EventCollectionResponse findAll() {
 

@@ -21,3 +21,6 @@ curl -X POST \
     "city": "NYC",
     "carrier": "Verizon"
 }'
+
+#### H2 Console access:
+http://localhost:8080/h2-console/

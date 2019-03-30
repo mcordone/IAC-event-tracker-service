@@ -22,7 +22,7 @@ public class EventController {
     }
 
     /**
-     * Post endpoint to handle event creation
+     * Post endpoint to handle event tracking/creation
      * @param eventDto - event payload
      * @return Event object
      */
@@ -35,7 +35,7 @@ public class EventController {
     }
 
     /**
-     *
+     * GET endpoint to retrieve event object with corresponding event
      * @param id
      * @return Event entity
      */
@@ -47,7 +47,7 @@ public class EventController {
     }
 
     /**
-     *
+     * GET endpoint to retrieve all Event objects
      * @return list of events entities or empty list
      */
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
